@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="ckb" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>سیستەمی کاشێری مۆبایل</title>
+    <style>
+        body { font-family: Tahoma, sans-serif; background: #f4f7f6; margin: 0; padding: 20px; }
+        .container { max-width: 900px; margin: auto; background: white; padding: 25px; border-radius: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+        .panel { display: none; }
+        .active { display: block; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        th, td { border: 1px solid #ddd; padding: 10px; text-align: center; }
+        button { padding: 10px 15px; border: none; cursor: pointer; border-radius: 4px; background: #28a745; color: white; }
+        .delete-btn { background: #dc3545; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div id="login-panel" class="active">
+        <h2>چوونەژوورەوە</h2>
+        <input type="text" id="user" placeholder="یوزەرنەیەم">
+        <input type="password" id="pass" placeholder="پاسۆرد">
+        <button onclick="login()">چوونەژوورەوە</button>
+    </div>
+
+    <div id="admin-panel" class="panel">
+        <h2>بەڕێوەبەر (Admin)</h2>
+        <input type="text" id="itemName" placeholder="ناوی مۆبایل">
+        <input type="number" id="itemPrice" placeholder="نرخ">
+        <button onclick="addProduct()">زیادکردنی کاڵا</button>
+        <table id="adminTable">
+            <thead><tr><th>ناو</th><th>نرخ</th><th>سڕینەوە</th></tr></thead>
+            <tbody></tbody>
+        </table>
+        <br><button onclick="logout()">دەرچوون</button>
+    </div>
+
+    <div id="staff-panel" class="panel">
+        <h2>کارمەند (Staff)</h2>
+        <select id="saleSelect"></select>
+        <button onclick="sell()">فرۆشتن</button>
+        <table id="salesTable">
+            <thead><tr><th>کاڵای فرۆشراو</th><th>نرخ</th></tr></thead>
+            <tbody></tbody>
+        </table>
+        <br><button onclick="logout()">دەرچوون</button>
+    </div>
+</div>
+
+<script>
+    let products = JSON.parse(localStorage.getItem('products')) || [];
+
+    function login() {
+        let u = document.getElementById('user').value;
+        let p = document.getElementById('pass').value;
+        if(u === "admin" && p === "1234") { showPanel('admin-panel'); renderAdmin(); }
+        else if(u === "staff" && p === "0000") { showPanel('staff-panel'); renderStaff(); }
+        else alert("زانیاری هەڵەیە!");
+    }
+
+    function showPanel(id) {
+        document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+        document.getElementById('login-panel').classList.remove('active');
+        document.getElementById(id).classList.add('active');
+    }
+
+    function addProduct() {
+        let name = document.getElementById('itemName').value;
+        let price = document.getElementById('itemPrice').value;
+        products.push({name, price});
+        localStorage.setItem('products', JSON.stringify(products));
+        renderAdmin();
+    }
+
+    function renderAdmin() {
+        let tbody = document.querySelector('#adminTable tbody');
+        tbody.innerHTML = products.map((p, i) => `<tr><td>${p.name}</td><td>${p.price}</td><td><button class="delete-btn" onclick="del(${i})">سڕینەوە</button></td></tr>`).join('');
+    }
+
+    function renderStaff() {
+        let select = document.getElementById('saleSelect');
+        select.innerHTML = products.map(p => `<option value="${p.name}|${p.price}">${p.name} - ${p.price}$</option>`).join('');
+    }
+
+    function sell() {
+        let data = document.getElementById('saleSelect').value.split('|');
+        let tbody = document.querySelector('#salesTable tbody');
+        tbody.innerHTML += `<tr><td>${data[0]}</td><td>${data[1]}$</td></tr>`;
+    }
+
+    function del(i) { products.splice(i, 1); localStorage.setItem('products', JSON.stringify(products)); renderAdmin(); }
+    function logout() { location.reload(); }
+</script>
+
+</body>
+</html>
